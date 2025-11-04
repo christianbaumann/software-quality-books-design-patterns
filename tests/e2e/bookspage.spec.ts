@@ -4,7 +4,6 @@ import {faker} from '@faker-js/faker'
 import bcrypt from 'bcryptjs'
 
 import {test} from '../fixtures/bookspage-fixture'
-import {UserBuilder} from '../data-builders/user-builder'
 import prisma from '../../src/lib/db'
 
 test.describe('Books Page', () => {
@@ -21,7 +20,6 @@ test.describe('Books Page', () => {
     }
 
     test.beforeAll(async () => {
-        // Create user
         const userId = faker.string.uuid()
         const userEmail = faker.internet.email()
         const userPassword = faker.internet.password()
@@ -41,7 +39,6 @@ test.describe('Books Page', () => {
             }
         })
 
-        // Create book
         testBook = await prisma.book.create({
             data: {
                 id: faker.string.uuid(),
@@ -58,7 +55,9 @@ test.describe('Books Page', () => {
     test.afterAll(async () => {
         await prisma.book.delete({where: {id: testBook.id}})
         if (testBook.user?.email) {
-            await UserBuilder.delete(testBook.user.email)
+            await prisma.user.delete({
+                where: {email: testBook.user.email}
+            })
         }
     })
 

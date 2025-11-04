@@ -4,7 +4,6 @@ import {faker} from '@faker-js/faker'
 import bcrypt from 'bcryptjs'
 
 import {test} from '../fixtures/review-fixture'
-import {UserBuilder} from '../data-builders/user-builder'
 import prisma from '../../src/lib/db'
 
 test.describe('Book Reviews', () => {
@@ -21,7 +20,6 @@ test.describe('Book Reviews', () => {
     }
 
     test.beforeAll(async () => {
-        // Create user for book ownership
         const ownerId = faker.string.uuid()
         const ownerEmail = faker.internet.email()
         const ownerPassword = faker.internet.password()
@@ -41,7 +39,6 @@ test.describe('Book Reviews', () => {
             }
         })
 
-        // Create book
         testBook = await prisma.book.create({
             data: {
                 id: faker.string.uuid(),
@@ -58,7 +55,9 @@ test.describe('Book Reviews', () => {
     test.afterAll(async () => {
         await prisma.book.delete({where: {id: testBook.id}})
         if (testBook.user?.email) {
-            await UserBuilder.delete(testBook.user.email)
+            await prisma.user.delete({
+                where: {email: testBook.user.email}
+            })
         }
     })
 
@@ -91,42 +90,40 @@ test.describe('Book Reviews', () => {
 
         await reviewPage.submitReview(reviewContent, rating)
 
-        // Cleanup
-        await UserBuilder.delete(testUser.email)
+        await prisma.user.delete({
+            where: {email: testUser.email}
+        })
     })
 
     test('should hide review form after submitting a review', async ({reviewPage, authHelper}) => {
         const testUser = await authHelper.loginUser()
         await reviewPage.goto(testBook.id)
 
-        // Submit a review
         await reviewPage.submitReview('Test review content', 4)
         await reviewPage.page.waitForLoadState('networkidle')
 
-        // Verify review form is hidden
         await expect(reviewPage.reviewForm).not.toBeVisible()
         await expect(reviewPage.page.getByText('You have already reviewed this book')).toBeVisible()
 
-        // Cleanup
-        await UserBuilder.delete(testUser.email)
+        await prisma.user.delete({
+            where: {email: testUser.email}
+        })
     })
 
     test('should show already reviewed message when revisiting page', async ({reviewPage, authHelper}) => {
         const testUser = await authHelper.loginUser()
         await reviewPage.goto(testBook.id)
 
-        // Submit initial review
         await reviewPage.submitReview('Test review content', 4)
         await reviewPage.page.waitForLoadState('networkidle')
 
-        // Reload page to simulate revisiting later
         await reviewPage.page.reload({waitUntil: 'networkidle'})
 
-        // Verify review form is still hidden
         await expect(reviewPage.reviewForm).not.toBeVisible()
         await expect(reviewPage.page.getByText('You have already reviewed this book')).toBeVisible()
 
-        // Cleanup
-        await UserBuilder.delete(testUser.email)
+        await prisma.user.delete({
+            where: {email: testUser.email}
+        })
     })
 })
