@@ -1,8 +1,8 @@
-import {expect} from '@playwright/test'
+import {expect, test} from '@playwright/test'
 import {faker} from '@faker-js/faker'
 import bcrypt from 'bcryptjs'
 
-import {test} from '../fixtures/new-book-fixture'
+import {AuthHelper} from '../helpers/auth.helper'
 import prisma from '../../src/lib/db'
 
 test.describe('New Book Validation', () => {
@@ -14,7 +14,7 @@ test.describe('New Book Validation', () => {
         updatedAt: Date
     }
 
-    test.beforeEach(async ({authHelper}) => {
+    test.beforeEach(async ({page}) => {
         const userId = faker.string.uuid()
         const userEmail = faker.internet.email()
         const userPassword = faker.internet.password()
@@ -42,6 +42,7 @@ test.describe('New Book Validation', () => {
             password: userPassword
         }
 
+        const authHelper = new AuthHelper(page)
         await authHelper.loginUser(testUser)
     })
 
@@ -53,59 +54,73 @@ test.describe('New Book Validation', () => {
         }
     })
 
-    test('should show error when title is empty', async ({newBookPage}) => {
-        await newBookPage.goto()
-        await newBookPage.createBook('', 'Valid description')
-        await expect(newBookPage.page.getByText('Title is required')).toBeVisible()
+    test('should show error when title is empty', async ({page}) => {
+        await page.goto('/books/new')
+        await page.getByLabel('Title').fill('')
+        await page.getByLabel('Description').fill('Valid description')
+        await page.getByRole('button', {name: /Add Book|Saving.../}).click()
+        await expect(page.getByText('Title is required')).toBeVisible()
     })
 
-    test('should show error when title exceeds 100 characters', async ({newBookPage}) => {
-        await newBookPage.goto()
+    test('should show error when title exceeds 100 characters', async ({page}) => {
+        await page.goto('/books/new')
         const longTitle = 'a'.repeat(101)
-        await newBookPage.createBook(longTitle, 'Valid description')
-        await expect(newBookPage.page.getByText('Title must be less than 100 characters')).toBeVisible()
+        await page.getByLabel('Title').fill(longTitle)
+        await page.getByLabel('Description').fill('Valid description')
+        await page.getByRole('button', {name: /Add Book|Saving.../}).click()
+        await expect(page.getByText('Title must be less than 100 characters')).toBeVisible()
     })
 
-    test('should show error when description is empty', async ({newBookPage}) => {
-        await newBookPage.goto()
-        await newBookPage.createBook('Valid title', '')
-        await expect(newBookPage.page.getByText('Description is required')).toBeVisible()
+    test('should show error when description is empty', async ({page}) => {
+        await page.goto('/books/new')
+        await page.getByLabel('Title').fill('Valid title')
+        await page.getByLabel('Description').fill('')
+        await page.getByRole('button', {name: /Add Book|Saving.../}).click()
+        await expect(page.getByText('Description is required')).toBeVisible()
     })
 
-    test('should show error when description exceeds 750 characters', async ({newBookPage}) => {
-        await newBookPage.goto()
+    test('should show error when description exceeds 750 characters', async ({page}) => {
+        await page.goto('/books/new')
         const longDescription = 'a'.repeat(751)
-        await newBookPage.createBook('Valid title', longDescription)
-        await expect(newBookPage.page.getByText('Description must be less than 500 characters')).toBeVisible()
+        await page.getByLabel('Title').fill('Valid title')
+        await page.getByLabel('Description').fill(longDescription)
+        await page.getByRole('button', {name: /Add Book|Saving.../}).click()
+        await expect(page.getByText('Description must be less than 500 characters')).toBeVisible()
     })
 
-    test('should show both errors when title and description are empty', async ({newBookPage}) => {
-        await newBookPage.goto()
-        await newBookPage.createBook('', '')
-        await expect(newBookPage.page.getByText('Title is required')).toBeVisible()
-        await expect(newBookPage.page.getByText('Description is required')).toBeVisible()
+    test('should show both errors when title and description are empty', async ({page}) => {
+        await page.goto('/books/new')
+        await page.getByLabel('Title').fill('')
+        await page.getByLabel('Description').fill('')
+        await page.getByRole('button', {name: /Add Book|Saving.../}).click()
+        await expect(page.getByText('Title is required')).toBeVisible()
+        await expect(page.getByText('Description is required')).toBeVisible()
     })
 
-    test('should not make API call when validation fails', async ({newBookPage, page}) => {
+    test('should not make API call when validation fails', async ({page}) => {
         let apiCallMade = false
         await page.route('**/api/books', async route => {
             apiCallMade = true
             await route.fulfill({status: 200})
         })
 
-        await newBookPage.goto()
-        await newBookPage.createBook('', '')
+        await page.goto('/books/new')
+        await page.getByLabel('Title').fill('')
+        await page.getByLabel('Description').fill('')
+        await page.getByRole('button', {name: /Add Book|Saving.../}).click()
 
-        await expect(newBookPage.page.getByText('Title is required')).toBeVisible()
-        await expect(newBookPage.page.getByText('Description is required')).toBeVisible()
+        await expect(page.getByText('Title is required')).toBeVisible()
+        await expect(page.getByText('Description is required')).toBeVisible()
 
         expect(apiCallMade).toBe(false)
     })
 
-    test('should successfully create book with valid data', async ({newBookPage}) => {
-        await newBookPage.goto()
-        await newBookPage.createBook('Valid Title', 'Valid description that meets the minimum requirements')
+    test('should successfully create book with valid data', async ({page}) => {
+        await page.goto('/books/new')
+        await page.getByLabel('Title').fill('Valid Title')
+        await page.getByLabel('Description').fill('Valid description that meets the minimum requirements')
+        await page.getByRole('button', {name: /Add Book|Saving.../}).click()
 
-        await expect(newBookPage.page).toHaveURL('/books')
+        await expect(page).toHaveURL('/books')
     })
 })
