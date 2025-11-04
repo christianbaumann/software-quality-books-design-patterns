@@ -1,20 +1,15 @@
-import { test as base } from '@playwright/test'
+import {test as base} from '@playwright/test'
 
-import { BooksPage } from '../page-objects/books-page'
-import { BookBuilder } from '../data-builders/book-builder'
+import {BooksPage} from '../page-objects/books-page'
 
 export type TestFixtures = {
-  booksPage: BooksPage;
-  bookBuilder: BookBuilder;
+    booksPage: BooksPage;
 }
 
 export const test = base.extend<TestFixtures>({
-  booksPage: async ({ page }, use) => {
-    await use(new BooksPage(page))
-  },
-  bookBuilder: async ({}, use) => {
-    await use(BookBuilder.aBook())
-  }
+    booksPage: async ({page}, use) => {
+        await use(new BooksPage(page))
+    }
 })
 
-export { expect } from '@playwright/test' 
+export {expect} from '@playwright/test'
