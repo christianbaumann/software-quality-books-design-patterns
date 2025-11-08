@@ -16,23 +16,29 @@ export async function initializeTestData() {
     try {
         await prisma.user.findUniqueOrThrow({where: {email: TEST_USER.email}})
     } catch {
-        const hashedPassword = await bcrypt.hash(TEST_USER.password, 10)
-        await prisma.user.create({
-            data: {
-                id: TEST_USER.id,
-                email: TEST_USER.email,
-                password: hashedPassword,
-                profile: {create: {name: 'Test User'}}
-            }
-        })
+        try {
+            const hashedPassword = await bcrypt.hash(TEST_USER.password, 10)
+            await prisma.user.create({
+                data: {
+                    id: TEST_USER.id,
+                    email: TEST_USER.email,
+                    password: hashedPassword,
+                    profile: {create: {name: 'Test User'}}
+                }
+            })
 
-        await prisma.book.create({
-            data: {
-                id: TEST_BOOK.id,
-                title: TEST_BOOK.title,
-                description: 'An exciting adventure story',
-                userId: TEST_USER.id
+            await prisma.book.create({
+                data: {
+                    id: TEST_BOOK.id,
+                    title: TEST_BOOK.title,
+                    description: 'An exciting adventure story',
+                    userId: TEST_USER.id
+                }
+            })
+        } catch (error: any) {
+            if (error.code !== 'P2002') {
+                throw error
             }
-        })
+        }
     }
 }
