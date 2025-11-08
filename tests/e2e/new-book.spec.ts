@@ -1,13 +1,42 @@
 import {expect, test} from '@playwright/test'
+import {faker} from '@faker-js/faker'
+import bcrypt from 'bcryptjs'
 
-import {TestHelper} from '../helpers/test-helper'
+import prisma from '../../src/lib/db'
 
 test.describe('New Book Validation', () => {
-    let testHelper: TestHelper
+    let userId: string
+    let userEmail: string
+    let userPassword: string
 
     test.beforeEach(async ({page}) => {
-        testHelper = new TestHelper(page)
-        await testHelper.createAndLoginUser()
+        userId = faker.string.uuid()
+        userEmail = faker.internet.email()
+        userPassword = faker.internet.password()
+        const userName = faker.person.fullName()
+        const hashedPassword = await bcrypt.hash(userPassword, 10)
+
+        await prisma.user.create({
+            data: {
+                id: userId,
+                email: userEmail,
+                password: hashedPassword,
+                profile: {
+                    create: {name: userName}
+                }
+            }
+        })
+
+        await page.context().clearCookies()
+        const csrfResponse = await page.request.get('/api/auth/csrf')
+        const {csrfToken} = await csrfResponse.json()
+
+        await page.request.post('/api/auth/callback/credentials', {
+            form: {csrfToken, email: userEmail, password: userPassword, callbackUrl: '/'}
+        })
+
+        await page.request.get('/api/auth/session')
+        await page.goto('/')
     })
 
     test('should show error when title is empty', async ({page}) => {

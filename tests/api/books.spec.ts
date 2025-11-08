@@ -1,25 +1,67 @@
 import {test, expect} from '@playwright/test'
+import {faker} from '@faker-js/faker'
+import bcrypt from 'bcryptjs'
 
-import {ApiHelper} from './api-helper'
+import prisma from '../../src/lib/db'
 
 test.describe('Books API', () => {
-    let api: ApiHelper
+    test('should create a new book when authenticated', async ({request}) => {
+        const userId = faker.string.uuid()
+        const userEmail = faker.internet.email()
+        const userPassword = faker.internet.password()
+        const userName = faker.person.fullName()
+        const hashedPassword = await bcrypt.hash(userPassword, 10)
 
-    test.beforeEach(async ({request}) => {
-        api = new ApiHelper(request)
-    })
+        const user = await prisma.user.create({
+            data: {
+                id: userId,
+                email: userEmail,
+                password: hashedPassword,
+                profile: {
+                    create: {
+                        name: userName,
+                    }
+                }
+            },
+            include: {
+                profile: true
+            }
+        })
 
-    test('should create a new book when authenticated', async () => {
-        // Create and authenticate user
-        await api.createAuthenticatedUser()
+        const csrfResponse = await request.get('/api/auth/csrf')
+        const {csrfToken} = await csrfResponse.json()
+
+        const loginResponse = await request.post('/api/auth/callback/credentials', {
+            form: {
+                email: userEmail,
+                password: userPassword,
+                csrfToken,
+                redirect: 'false',
+                callbackUrl: 'http://localhost:3000/login',
+                json: 'true'
+            },
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+
+        if (!loginResponse.ok()) {
+            throw new Error('Authentication failed')
+        }
+
+        await request.get('/api/auth/session')
 
         const newBook = {
             title: 'Test Book Title',
             description: 'Test book description'
         }
 
-        // Create book
-        const response = await api.createBook(newBook)
+        const response = await request.post('/api/books', {
+            data: newBook,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
 
         expect(response.ok()).toBeTruthy()
         const addedBook = await response.json()
@@ -27,10 +69,15 @@ test.describe('Books API', () => {
         expect(addedBook.description).toBe(newBook.description)
     })
 
-    test('should return 401 when creating book without auth', async () => {
-        const response = await api.createBook({
-            title: 'Test Book',
-            description: 'Test Description'
+    test('should return 401 when creating book without auth', async ({request}) => {
+        const response = await request.post('/api/books', {
+            data: {
+                title: 'Test Book',
+                description: 'Test Description'
+            },
+            headers: {
+                'Content-Type': 'application/json'
+            }
         })
 
         expect(response.status()).toBe(401)
