@@ -1,40 +1,18 @@
 import {test, expect} from '@playwright/test'
-import {faker} from '@faker-js/faker'
-import bcrypt from 'bcryptjs'
-
-import prisma from '../../src/lib/db'
+import {UserBuilder} from '../data-builders/user-builder'
+import {BookBuilder} from '../data-builders/book-builder'
 
 test.describe('Books API', () => {
     test('should create a new book when authenticated', async ({request}) => {
-        const userId = faker.string.uuid()
-        const userEmail = faker.internet.email()
-        const userPassword = faker.internet.password()
-        const userName = faker.person.fullName()
-        const hashedPassword = await bcrypt.hash(userPassword, 10)
-
-        const user = await prisma.user.create({
-            data: {
-                id: userId,
-                email: userEmail,
-                password: hashedPassword,
-                profile: {
-                    create: {
-                        name: userName,
-                    }
-                }
-            },
-            include: {
-                profile: true
-            }
-        })
+        const testUser = await new UserBuilder().create()
 
         const csrfResponse = await request.get('/api/auth/csrf')
         const {csrfToken} = await csrfResponse.json()
 
         const loginResponse = await request.post('/api/auth/callback/credentials', {
             form: {
-                email: userEmail,
-                password: userPassword,
+                email: testUser.email,
+                password: testUser.password,
                 csrfToken,
                 redirect: 'false',
                 callbackUrl: 'http://localhost:3000/login',
@@ -67,6 +45,8 @@ test.describe('Books API', () => {
         const addedBook = await response.json()
         expect(addedBook.title).toBe(newBook.title)
         expect(addedBook.description).toBe(newBook.description)
+
+        await UserBuilder.delete(testUser.email)
     })
 
     test('should return 401 when creating book without auth', async ({request}) => {

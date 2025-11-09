@@ -1,34 +1,18 @@
 import {expect, test} from '@playwright/test'
-import {faker} from '@faker-js/faker'
-import bcrypt from 'bcryptjs'
-
-import prisma from '../../src/lib/db'
+import {UserBuilder} from '../data-builders/user-builder'
 
 test.describe('Homepage', () => {
     test('should show add book button when user is logged in', async ({page}) => {
-        const userId = faker.string.uuid()
-        const userEmail = faker.internet.email()
-        const userPassword = faker.internet.password()
-        const userName = faker.person.fullName()
-        const hashedPassword = await bcrypt.hash(userPassword, 10)
+        // Create test user
+        const testUser = await new UserBuilder().create()
 
-        const user = await prisma.user.create({
-            data: {
-                id: userId,
-                email: userEmail,
-                password: hashedPassword,
-                profile: {
-                    create: {name: userName}
-                }
-            }
-        })
-
+        // Authenticate
         await page.context().clearCookies()
         const csrfResponse = await page.request.get('/api/auth/csrf')
         const {csrfToken} = await csrfResponse.json()
 
         await page.request.post('/api/auth/callback/credentials', {
-            form: {csrfToken, email: userEmail, password: userPassword, callbackUrl: '/'}
+            form: {csrfToken, email: testUser.email, password: testUser.password, callbackUrl: '/'}
         })
 
         await page.request.get('/api/auth/session')
@@ -36,6 +20,9 @@ test.describe('Homepage', () => {
 
         const addBookButton = page.getByRole('link', {name: 'Add New Book'})
         await expect(addBookButton).toBeVisible()
+
+        // Cleanup
+        await UserBuilder.delete(testUser.email)
     })
 
     test('should navigate to login page when clicking Sign In button', async ({page}) => {

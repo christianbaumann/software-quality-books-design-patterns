@@ -1,8 +1,5 @@
 import {expect, test} from '@playwright/test'
-import {faker} from '@faker-js/faker'
-import bcrypt from 'bcryptjs'
-
-import prisma from '../../src/lib/db'
+import {UserBuilder} from '../data-builders/user-builder'
 
 test.describe('Login Validation', () => {
 
@@ -28,32 +25,8 @@ test.describe('Login Validation', () => {
     })
 
     test('should successfully login with valid credentials', async ({page}) => {
-        const userId = faker.string.uuid()
-        const userEmail = faker.internet.email()
-        const userPassword = faker.internet.password()
-        const userName = faker.person.fullName()
-        const hashedPassword = await bcrypt.hash(userPassword, 10)
-
-        const user = await prisma.user.create({
-            data: {
-                id: userId,
-                email: userEmail,
-                password: hashedPassword,
-                profile: {
-                    create: {
-                        name: userName,
-                    }
-                }
-            },
-            include: {
-                profile: true
-            }
-        })
-
-        const testUser = {
-            ...user,
-            password: userPassword
-        }
+        // Create test user using builder
+        const testUser = await new UserBuilder().create()
 
         await page.goto('/login')
         await page.locator('input[name="email"]').fill(testUser.email)
@@ -61,5 +34,8 @@ test.describe('Login Validation', () => {
         await page.locator('button[type="submit"]').click()
 
         await expect(page).toHaveURL('/books')
+
+        // Cleanup
+        await UserBuilder.delete(testUser.email)
     })
 })

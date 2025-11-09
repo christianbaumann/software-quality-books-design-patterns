@@ -1,9 +1,7 @@
 import {expect, test} from '@playwright/test'
 import {Book} from '@prisma/client'
-import {faker} from '@faker-js/faker'
-import bcrypt from 'bcryptjs'
-
-import prisma from '../../src/lib/db'
+import {UserBuilder} from '../data-builders/user-builder'
+import {BookBuilder} from '../data-builders/book-builder'
 
 test.describe('Book page data', () => {
     test.describe.configure({mode: 'serial'})
@@ -17,51 +15,17 @@ test.describe('Book page data', () => {
             updatedAt: Date
         } | null
     }
+    let testUser: Awaited<ReturnType<typeof UserBuilder.prototype.create>>
 
     test.beforeAll(async () => {
-        const userId = faker.string.uuid()
-        const userEmail = faker.internet.email()
-        const userPassword = faker.internet.password()
-        const userName = faker.person.fullName()
-        const hashedPassword = await bcrypt.hash(userPassword, 10)
-
-        const user = await prisma.user.create({
-            data: {
-                id: userId,
-                email: userEmail,
-                password: hashedPassword,
-                profile: {
-                    create: {
-                        name: userName,
-                    }
-                }
-            }
-        })
-
-        const bookId = faker.string.uuid()
-        const bookTitle = faker.lorem.words(3)
-        const bookDescription = faker.lorem.paragraph()
-
-        testBook = await prisma.book.create({
-            data: {
-                id: bookId,
-                title: bookTitle,
-                description: bookDescription,
-                userId: user.id
-            },
-            include: {
-                user: true
-            }
-        })
+        // Create user and book using builders
+        testUser = await new UserBuilder().create()
+        testBook = await new BookBuilder(testUser.id).create()
     })
 
     test.afterAll(async () => {
-        await prisma.book.delete({where: {id: testBook.id}})
-        if (testBook.user?.email) {
-            await prisma.user.delete({
-                where: {email: testBook.user.email}
-            })
-        }
+        await BookBuilder.delete(testBook.id)
+        await UserBuilder.delete(testUser.email)
     })
 
     test('should display book with correct title', async ({page}) => {
