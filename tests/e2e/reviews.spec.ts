@@ -54,6 +54,8 @@ test.describe('Book Reviews', () => {
 
         await reviewPage.submitReview('Test review content', 4)
 
+        await reviewPage.page.waitForLoadState('networkidle')
+
         await expect(reviewPage.reviewForm).not.toBeVisible()
         await expect(reviewPage.page.getByText('You have already reviewed this book')).toBeVisible()
 
@@ -67,7 +69,10 @@ test.describe('Book Reviews', () => {
 
         await reviewPage.submitReview('Test review content', 4)
 
+        await reviewPage.page.waitForLoadState('networkidle')
+
         await reviewPage.goto(TEST_BOOK.id)
+        await reviewPage.page.waitForLoadState('networkidle')
 
         await expect(reviewPage.reviewForm).not.toBeVisible()
         await expect(reviewPage.page.getByText('You have already reviewed this book')).toBeVisible()
