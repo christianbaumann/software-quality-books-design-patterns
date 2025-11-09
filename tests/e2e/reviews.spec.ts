@@ -1,9 +1,8 @@
 import {expect, test} from '@playwright/test'
-import {faker} from '@faker-js/faker'
-import bcrypt from 'bcryptjs'
-
-import prisma from '../../src/lib/db'
-import {TEST_USER, TEST_BOOK, initializeTestData} from '../fixtures/setup'
+import {UserBuilder} from '../data-builders/user-builder'
+import {BookBuilder} from '../data-builders/book-builder'
+import {AuthHelper} from '../helpers/auth.helper'
+import {TEST_BOOK, initializeTestData} from '../fixtures/setup'
 
 test.describe('Book Reviews', () => {
     test.beforeAll(async () => {
@@ -11,49 +10,8 @@ test.describe('Book Reviews', () => {
     })
 
     test('should show review form when user is logged in', async ({page}) => {
-        const userId = faker.string.uuid()
-        const userEmail = faker.internet.email()
-        const userPassword = faker.internet.password()
-        const userName = faker.person.fullName()
-        const hashedPassword = await bcrypt.hash(userPassword, 10)
-
-        const user = await prisma.user.create({
-            data: {
-                id: userId,
-                email: userEmail,
-                password: hashedPassword,
-                profile: {
-                    create: {
-                        name: userName,
-                    }
-                }
-            },
-            include: {
-                profile: true
-            }
-        })
-
-        const testUser = {
-            ...user,
-            password: userPassword
-        }
-
-        await page.context().clearCookies()
-
-        const csrfResponse = await page.request.get('/api/auth/csrf')
-        const {csrfToken} = await csrfResponse.json()
-
-        await page.request.post('/api/auth/callback/credentials', {
-            form: {
-                csrfToken,
-                email: testUser.email,
-                password: testUser.password,
-                callbackUrl: '/'
-            }
-        })
-
-        await page.request.get('/api/auth/session')
-        await page.goto('/')
+        const authHelper = new AuthHelper(page)
+        await authHelper.loginUser()
 
         await page.goto(`/books/${TEST_BOOK.id}`)
         await expect(page.locator('form')).toBeVisible()
@@ -66,49 +24,8 @@ test.describe('Book Reviews', () => {
     })
 
     test('should show validation error when submitting empty review', async ({page}) => {
-        const userId = faker.string.uuid()
-        const userEmail = faker.internet.email()
-        const userPassword = faker.internet.password()
-        const userName = faker.person.fullName()
-        const hashedPassword = await bcrypt.hash(userPassword, 10)
-
-        const user = await prisma.user.create({
-            data: {
-                id: userId,
-                email: userEmail,
-                password: hashedPassword,
-                profile: {
-                    create: {
-                        name: userName,
-                    }
-                }
-            },
-            include: {
-                profile: true
-            }
-        })
-
-        const testUser = {
-            ...user,
-            password: userPassword
-        }
-
-        await page.context().clearCookies()
-
-        const csrfResponse = await page.request.get('/api/auth/csrf')
-        const {csrfToken} = await csrfResponse.json()
-
-        await page.request.post('/api/auth/callback/credentials', {
-            form: {
-                csrfToken,
-                email: testUser.email,
-                password: testUser.password,
-                callbackUrl: '/'
-            }
-        })
-
-        await page.request.get('/api/auth/session')
-        await page.goto('/')
+        const authHelper = new AuthHelper(page)
+        await authHelper.loginUser()
 
         await page.goto(`/books/${TEST_BOOK.id}`)
         await page.getByLabel('Review').fill('')
@@ -118,49 +35,8 @@ test.describe('Book Reviews', () => {
     })
 
     test('should successfully submit review', async ({page}) => {
-        const userId = faker.string.uuid()
-        const userEmail = faker.internet.email()
-        const userPassword = faker.internet.password()
-        const userName = faker.person.fullName()
-        const hashedPassword = await bcrypt.hash(userPassword, 10)
-
-        const user = await prisma.user.create({
-            data: {
-                id: userId,
-                email: userEmail,
-                password: hashedPassword,
-                profile: {
-                    create: {
-                        name: userName,
-                    }
-                }
-            },
-            include: {
-                profile: true
-            }
-        })
-
-        const testUser = {
-            ...user,
-            password: userPassword
-        }
-
-        await page.context().clearCookies()
-
-        const csrfResponse = await page.request.get('/api/auth/csrf')
-        const {csrfToken} = await csrfResponse.json()
-
-        await page.request.post('/api/auth/callback/credentials', {
-            form: {
-                csrfToken,
-                email: testUser.email,
-                password: testUser.password,
-                callbackUrl: '/'
-            }
-        })
-
-        await page.request.get('/api/auth/session')
-        await page.goto('/')
+        const authHelper = new AuthHelper(page)
+        const testUser = await authHelper.loginUser()
 
         await page.goto(`/books/${TEST_BOOK.id}`)
 
@@ -182,52 +58,13 @@ test.describe('Book Reviews', () => {
         if (!reviewResponse.ok()) {
             throw new Error(`Review submission failed with status ${reviewResponse.status()}`)
         }
+
+        await UserBuilder.delete(testUser.email)
     })
 
     test('should hide review form after submitting a review', async ({page}) => {
-        const userId = faker.string.uuid()
-        const userEmail = faker.internet.email()
-        const userPassword = faker.internet.password()
-        const userName = faker.person.fullName()
-        const hashedPassword = await bcrypt.hash(userPassword, 10)
-
-        const user = await prisma.user.create({
-            data: {
-                id: userId,
-                email: userEmail,
-                password: hashedPassword,
-                profile: {
-                    create: {
-                        name: userName,
-                    }
-                }
-            },
-            include: {
-                profile: true
-            }
-        })
-
-        const testUser = {
-            ...user,
-            password: userPassword
-        }
-
-        await page.context().clearCookies()
-
-        const csrfResponse = await page.request.get('/api/auth/csrf')
-        const {csrfToken} = await csrfResponse.json()
-
-        await page.request.post('/api/auth/callback/credentials', {
-            form: {
-                csrfToken,
-                email: testUser.email,
-                password: testUser.password,
-                callbackUrl: '/'
-            }
-        })
-
-        await page.request.get('/api/auth/session')
-        await page.goto('/')
+        const authHelper = new AuthHelper(page)
+        const testUser = await authHelper.loginUser()
 
         await page.goto(`/books/${TEST_BOOK.id}`)
 
@@ -251,52 +88,13 @@ test.describe('Book Reviews', () => {
 
         await expect(page.locator('form')).not.toBeVisible()
         await expect(page.getByText('You have already reviewed this book')).toBeVisible()
+
+        await UserBuilder.delete(testUser.email)
     })
 
     test('should show already reviewed message when revisiting page', async ({page}) => {
-        const userId = faker.string.uuid()
-        const userEmail = faker.internet.email()
-        const userPassword = faker.internet.password()
-        const userName = faker.person.fullName()
-        const hashedPassword = await bcrypt.hash(userPassword, 10)
-
-        const user = await prisma.user.create({
-            data: {
-                id: userId,
-                email: userEmail,
-                password: hashedPassword,
-                profile: {
-                    create: {
-                        name: userName,
-                    }
-                }
-            },
-            include: {
-                profile: true
-            }
-        })
-
-        const testUser = {
-            ...user,
-            password: userPassword
-        }
-
-        await page.context().clearCookies()
-
-        const csrfResponse = await page.request.get('/api/auth/csrf')
-        const {csrfToken} = await csrfResponse.json()
-
-        await page.request.post('/api/auth/callback/credentials', {
-            form: {
-                csrfToken,
-                email: testUser.email,
-                password: testUser.password,
-                callbackUrl: '/'
-            }
-        })
-
-        await page.request.get('/api/auth/session')
-        await page.goto('/')
+        const authHelper = new AuthHelper(page)
+        const testUser = await authHelper.loginUser()
 
         await page.goto(`/books/${TEST_BOOK.id}`)
 
@@ -322,5 +120,7 @@ test.describe('Book Reviews', () => {
 
         await expect(page.locator('form')).not.toBeVisible()
         await expect(page.getByText('You have already reviewed this book')).toBeVisible()
+
+        await UserBuilder.delete(testUser.email)
     })
 })
