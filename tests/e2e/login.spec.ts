@@ -1,7 +1,12 @@
 import {test, expect} from '../fixtures/login-fixture'
 import {UserBuilder} from '../data-builders/user-builder'
+import prisma from '../../src/lib/db'
 
 test.describe('Login Validation', () => {
+
+    test.afterEach(async () => {
+        await prisma.$disconnect()
+    })
 
     test('should show both validation messages when fields are empty', async ({loginPage}) => {
         await loginPage.goto()

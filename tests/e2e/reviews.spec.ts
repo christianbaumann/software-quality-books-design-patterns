@@ -1,10 +1,15 @@
 import {test, expect} from '../fixtures/review-fixture'
 import {UserBuilder} from '../data-builders/user-builder'
 import {TEST_BOOK, initializeTestData} from '../fixtures/setup'
+import prisma from '../../src/lib/db'
 
 test.describe('Book Reviews', () => {
     test.beforeAll(async () => {
         await initializeTestData()
+    })
+
+    test.afterAll(async () => {
+        await prisma.$disconnect()
     })
 
     test('should show review form when user is logged in', async ({reviewPage, authHelper}) => {

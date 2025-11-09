@@ -1,5 +1,6 @@
 import {test, expect} from '../fixtures/new-book-fixture'
 import {UserBuilder} from '../data-builders/user-builder'
+import prisma from '../../src/lib/db'
 
 test.describe('New Book Validation', () => {
     let testUser: Awaited<ReturnType<UserBuilder['create']>>
@@ -12,6 +13,7 @@ test.describe('New Book Validation', () => {
         if (testUser?.email) {
             await UserBuilder.delete(testUser.email)
         }
+        await prisma.$disconnect()
     })
 
     test('should show error when title is empty', async ({newBookPage}) => {

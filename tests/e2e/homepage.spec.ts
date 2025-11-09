@@ -1,8 +1,13 @@
 import {test, expect} from '../fixtures/homepage-fixture'
 import {UserBuilder} from '../data-builders/user-builder'
 import {AuthHelper} from '../helpers/auth.helper'
+import prisma from '../../src/lib/db'
 
 test.describe('Homepage', () => {
+    test.afterEach(async () => {
+        await prisma.$disconnect()
+    })
+
     test('should show add book button when user is logged in', async ({homePage, page}) => {
         const authHelper = new AuthHelper(page)
         const testUser = await authHelper.loginUser()

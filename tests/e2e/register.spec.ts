@@ -1,7 +1,12 @@
 import {test, expect} from '../fixtures/registration-fixture'
 import {UserBuilder} from '../data-builders/user-builder'
+import prisma from '../../src/lib/db'
 
 test.describe('Registration', () => {
+    test.afterEach(async () => {
+        await prisma.$disconnect()
+    })
+
     test('shows success notification when registering a new account', async ({registerPage, userBuilder}) => {
         const testUser = await userBuilder.build()
 

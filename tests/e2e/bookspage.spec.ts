@@ -1,9 +1,14 @@
 import {test, expect} from '../fixtures/bookspage-fixture'
 import {TEST_BOOK, initializeTestData} from '../fixtures/setup'
+import prisma from '../../src/lib/db'
 
 test.describe('Books Page', () => {
     test.beforeAll(async () => {
         await initializeTestData()
+    })
+
+    test.afterAll(async () => {
+        await prisma.$disconnect()
     })
 
     test('should display created book', async ({booksPage}) => {

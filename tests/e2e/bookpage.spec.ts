@@ -2,6 +2,7 @@ import {test, expect} from '../fixtures/bookpage-fixture'
 import {Book} from '@prisma/client'
 import {UserBuilder} from '../data-builders/user-builder'
 import {BookBuilder} from '../data-builders/book-builder'
+import prisma from '../../src/lib/db'
 
 test.describe('Book page data', () => {
     test.describe.configure({mode: 'serial'})
@@ -25,6 +26,7 @@ test.describe('Book page data', () => {
     test.afterAll(async () => {
         await BookBuilder.delete(testBook.id)
         await UserBuilder.delete(testUser.email)
+        await prisma.$disconnect()
     })
 
     test('should display book with correct title', async ({bookPage}) => {
