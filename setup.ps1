@@ -86,9 +86,8 @@ function Setup-EnvironmentFile {
     if (Get-Command openssl -ErrorAction SilentlyContinue) {
         $secret = (openssl rand -base64 32)
 
-        # **FIX:** Use a robust ForEach-Object loop instead of -replace to avoid parsing issues.
         $newContent = Get-Content -Path ".\.env" | ForEach-Object {
-            if ($_ -match '^NEXTAUTH_SECRET=') {
+            if ($_.StartsWith('NEXTAUTH_SECRET=')) {
                 # Replace this line with the new secret
                 "NEXTAUTH_SECRET=$secret"
             } else {
