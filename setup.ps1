@@ -38,7 +38,7 @@ function Check-Dependencies {
         log_error "Node.js is not installed. Please install it from https://nodejs.org/"
     }
     $nodeVersion = (node -v)
-    $nodeMajorVersion = ($nodeVersion -replace 'v', '').Split('.')[0]
+    $nodeMajorVersion = ($nodeVersion -replace "v", "").Split(".")[0]
     if ([int]$nodeMajorVersion -lt 20) {
         log_warn "Node.js ${nodeVersion} detected. v20.x is recommended."
     } else {
