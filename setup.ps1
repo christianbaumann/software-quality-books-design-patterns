@@ -24,7 +24,7 @@ function log_error {
 # Verify we're in the right directory by checking for package.json
 function Verify-RepoRoot {
     if (-not (Test-Path -Path ".\package.json" -PathType Leaf)) {
-        log_error "package.json not found. Please run this script from the project's root directory."
+        log_error "package.json not found. Please run this script from the project root directory."
     }
     log_info "Project root detected"
 }
