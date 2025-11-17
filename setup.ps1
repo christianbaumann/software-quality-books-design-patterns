@@ -4,29 +4,28 @@ $ErrorActionPreference = 'Stop'
 # --- Logging Functions with Colors ---
 function log_info {
     param([string]$Message)
-    Write-Host -ForegroundColor Green "✓ $Message"
+    Write-Host "[INFO]  $Message" -ForegroundColor Green
 }
 
 function log_warn {
     param([string]$Message)
-    Write-Host -ForegroundColor Yellow "⚠ $Message"
+    Write-Host "[WARN]  $Message" -ForegroundColor Yellow
 }
 
 function log_error {
     param([string]$Message)
-    Write-Host -ForegroundColor Red "✗ $Message"
+    Write-Host "[ERROR] $Message" -ForegroundColor Red
     exit 1
 }
 
-
 # --- Helper Functions ---
 
-# Verify we're in the right directory by checking for package.json
+# Verify we are in the right directory by checking for package.json
 function Verify-RepoRoot {
     if (-not (Test-Path -Path ".\package.json" -PathType Leaf)) {
         log_error "package.json not found. Please run this script from the project root directory."
     }
-    log_info "Project root detected"
+    log_info "Project root detected."
 }
 
 # Check for required command-line tools
@@ -35,25 +34,28 @@ function Check-Dependencies {
 
     # Check Node.js
     if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
-        log_error "Node.js is not installed. Please install it from https://nodejs.org/"
+        log_error "Node.js is not installed. Please install it from https://nodejs.org/."
     }
-    $nodeVersion = (node -v)
+
+    $nodeVersion = node -v
     $nodeMajorVersion = ($nodeVersion -replace "v", "").Split(".")[0]
+
     if ([int]$nodeMajorVersion -lt 20) {
-        log_warn "Node.js ${nodeVersion} detected. v20.x is recommended."
+        log_warn "Node.js $nodeVersion detected. Version 20.x is recommended."
     } else {
-        log_info "Node.js ${nodeVersion} detected"
+        log_info "Node.js $nodeVersion detected."
     }
 
     # Check npm
     if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
         log_error "npm is not installed. It should come with Node.js."
     }
-    log_info "npm $((npm -v)) detected"
+    $npmVersion = npm -v
+    log_info "npm $npmVersion detected."
 
     # Check openssl for secret generation
     if (-not (Get-Command openssl -ErrorAction SilentlyContinue)) {
-        log_warn "openssl not found. Cannot auto-generate NEXTAUTH_SECRET. Please install it (e.g., via Git for Windows)."
+        log_warn "openssl not found. Cannot auto-generate NEXTAUTH_SECRET. Please install it (for example via Git for Windows)."
     }
 }
 
@@ -84,20 +86,18 @@ function Setup-EnvironmentFile {
 
     # Generate and inject NEXTAUTH_SECRET if openssl is available
     if (Get-Command openssl -ErrorAction SilentlyContinue) {
-        $secret = (openssl rand -base64 32)
+        $secret = openssl rand -base64 32
 
         $newContent = Get-Content -Path ".\.env" | ForEach-Object {
             if ($_.StartsWith("NEXTAUTH_SECRET=")) {
-                # Replace this line with the new secret
                 "NEXTAUTH_SECRET=$secret"
             } else {
-                # Keep all other lines as they are
                 $_
             }
         }
-        $newContent | Set-Content -Path ".\.env"
 
-        log_info "Generated and set NEXTAUTH_SECRET"
+        $newContent | Set-Content -Path ".\.env"
+        log_info "Generated and set NEXTAUTH_SECRET."
     }
 }
 
@@ -106,16 +106,15 @@ function Setup-Database {
     log_info "Setting up Prisma database..."
     npx.cmd prisma migrate dev
     npx.cmd prisma generate
-    log_info "Database migrated and Prisma client generated"
+    log_info "Database migrated and Prisma client generated."
 }
 
 # Seed the database with initial data
 function Seed-Database {
     log_info "Seeding database with test data..."
     npm.cmd run seed
-    log_info "Database seeded successfully"
+    log_info "Database seeded successfully."
 }
-
 
 # --- Main Execution ---
 function main {
@@ -131,23 +130,23 @@ function main {
     Seed-Database
 
     Write-Host ""
-    log_info "Setup complete! 🎉"
+    log_info "Setup complete!"
     Write-Host ""
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    Write-Host "------------------------------------------------------------"
     Write-Host ""
     Write-Host "  Next steps:"
-    Write-Host "  1. Start the development server:  npm run dev"
-    Write-Host "  2. Open your browser to:          http://localhost:3000"
+    Write-Host "    1. Start the development server:  npm run dev"
+    Write-Host "    2. Open your browser to:          http://localhost:3000"
     Write-Host ""
     Write-Host "  Test Users:"
     Write-Host "    - test@test.com / password123"
     Write-Host "    - bob@example.com / password123"
     Write-Host ""
     Write-Host "  Database Tools:"
-    Write-Host "    - View data with GUI:      npx prisma studio"
-    Write-Host "    - Reset the database:      npx prisma migrate reset"
+    Write-Host "    - View data with GUI:   npx prisma studio"
+    Write-Host "    - Reset the database:   npx prisma migrate reset"
     Write-Host ""
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    Write-Host "------------------------------------------------------------"
     Write-Host ""
 }
 
