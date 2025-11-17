@@ -2,74 +2,69 @@
 
 A web application for managing and reviewing software quality books.
 
-## Prerequisites
-
-Before you begin, ensure you have the following installed:
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- [npm](https://www.npmjs.com/) (comes with Node.js)
-- [Git](https://git-scm.com/)
-- A code editor (we recommend [VS Code](https://code.visualstudio.com/))
-
 ## Getting Started
 
-## Prerequisites
+### Prerequisites
 
 Before you begin, ensure you have the following installed:
+
 - [Node.js](https://nodejs.org/) (v20.x recommended)
 - [npm](https://www.npmjs.com/) (comes with Node.js)
 - [Git](https://git-scm.com/)
 - A code editor (we recommend [VS Code](https://code.visualstudio.com/))
-cd software-quality-books
-```
+
+### Installation Steps
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd software-quality-books
+   ```
 
 2. Install dependencies:
-```bash
-npm install
-```
+   ```bash
+   npm install
+   ```
 
 3. Set up your environment variables:
-   - Copy `.env.example` to `.env`:
-3. Set up your environment variables:
-   - Copy `.env.development` to `.env`:
+    - Copy `.env.development` to `.env`:
    ```bash
    cp .env.development .env
    ```
-   - Update the following variables in `.env`:
-     - `DATABASE_URL`: Your database connection string
-     - `NEXTAUTH_SECRET`: Generate with `openssl rand -base64 32`
-     - `NEXTAUTH_URL`: `http://localhost:3000` for local development
-   ```bash
-   cp .env.development .env
-   ```
-   - Update the following variables in `.env`:
-     - `DATABASE_URL`: Your database connection string
-     - `NEXTAUTH_SECRET`: Generate with `openssl rand -base64 32`
+    - Update the following variables in `.env`:
+        - `DATABASE_URL`: SQLite database file path (default: `file:./dev.db`)
+        - `NEXTAUTH_SECRET`: Generate with `openssl rand -base64 32`
+        - `NEXTAUTH_URL`: `http://localhost:3000` for local development
+
 4. Set up the database:
-```bash
-npx prisma migrate dev
-npx prisma generate
-```
-     - `NEXTAUTH_URL`: `http://localhost:3000` for local development
+   ```bash
+   npx prisma migrate dev
+   npx prisma generate
+   ```
 
-## Technology Stack
-
-- [Next.js 15](https://nextjs.org/)
-- [React 19](https://react.dev/)
-- [TypeScript 5](https://www.typescriptlang.org/)
-- [Prisma](https://www.prisma.io/)
-- [Auth.js v5](https://authjs.dev/)
-- [Tailwind CSS 4](https://tailwindcss.com/)
-- [Playwright](https://playwright.dev/)
-```bash
-npm run seed
-```
+5. Seed the database with test data:
+   ```bash
+   npm run seed
+   ```
 
 6. Start the development server:
-```bash
-npm run dev
-```
+   ```bash
+   npm run dev
+   ```
+
+7. Open your browser and navigate to [http://localhost:3000](http://localhost:3000)
+
+### Test Users
+
+After seeding the database, you can log in with these test accounts:
+
+- Email: `test@test.com` / Password: `password123`
+- Email: `bob@example.com` / Password: `password123`
+
 ### Database Issues
+
 If you encounter database-related errors:
+
 ```bash
 # Reset the database and apply all migrations
 npx prisma migrate reset
@@ -77,15 +72,17 @@ npm run seed
 ```
 
 You can also run Prisma Studio to view the database:
+
 ```bash
 npx prisma studio
 ```
 
- User authentication with Auth.js v5
+User authentication with Auth.js v5
 
 ## Test Users
 
 After seeding the database, you can log in with these test accounts:
+
 - Email: `test@test.com` / Password: `password123`
 - Email: `bob@example.com` / Password: `password123`
 
@@ -132,7 +129,9 @@ npm run test:e2e
 - [Playwright](https://playwright.dev/)
 
 ### Database Issues
+
 If you encounter database-related errors:
+
 ```bash
 # Reset the database
 npx prisma db push --force-reset
@@ -140,19 +139,25 @@ npm run seed
 ```
 
 You can also run the Prisma Studio to view the database:
+
 ```bash
 npx prisma studio
 ```
 
 ## VS Code Extensions
-You may want to install the following extensions
-- [Prisma](https://marketplace.visualstudio.com/items?itemName=Prisma.prisma) - Adds syntax highlighting and formatting for Prisma schema files
-- [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss) - Provides autocomplete and syntax highlighting for Tailwind CSS classes
-- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) - JavaScript/TypeScript linting
-- [Playwright Test for VSCode](https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright) - Run and debug Playwright tests
 
+You may want to install the following extensions
+
+- [Prisma](https://marketplace.visualstudio.com/items?itemName=Prisma.prisma) - Adds syntax highlighting and formatting
+  for Prisma schema files
+- [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss) - Provides
+  autocomplete and syntax highlighting for Tailwind CSS classes
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) - JavaScript/TypeScript linting
+- [Playwright Test for VSCode](https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright) - Run and
+  debug Playwright tests
 
 ## Live Instance
+
 [Vercal Hosted Instance](https://software-quality-books.vercel.app/)
 
 ## Additional Resources
@@ -163,7 +168,7 @@ You may want to install the following extensions
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 - [Playwright Documentation](https://playwright.dev/docs/intro)
 
-
 ## License
 
-This project is part of a training course and is intended for educational purposes only.
+This project is part of a training course and is intended for educational purposes only.  
+Original repo by Richard Bradshaw available here: https://github.com/FriendlyTester/software-quality-books
