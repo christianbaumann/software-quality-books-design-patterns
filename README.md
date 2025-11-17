@@ -15,44 +15,85 @@ Before you begin, ensure you have the following installed:
 
 ### Installation Steps
 
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd software-quality-books
-   ```
+We provide an automated script for a fast and easy setup. A manual guide is also available below for those who are interested or run into issues.
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+#### Method 1: Automated Script (Recommended)
 
-3. Set up your environment variables:
-    - Copy `.env.development` to `.env`:
-   ```bash
-   cp .env.development .env
-   ```
-    - Update the following variables in `.env`:
-        - `DATABASE_URL`: SQLite database file path (default: `file:./dev.db`)
-        - `NEXTAUTH_SECRET`: Generate with `openssl rand -base64 32`
-        - `NEXTAUTH_URL`: `http://localhost:3000` for local development
+This is the fastest way to get the project running.
 
-4. Set up the database:
-   ```bash
-   npx prisma migrate dev
-   npx prisma generate
-   ```
+1.  **Clone the repository and enter the directory:**
+    ```bash
+    git clone https://github.com/christianbaumann/software-quality-books-design-patterns.git
+    cd software-quality-books-design-patterns
+    ```
 
-5. Seed the database with test data:
-   ```bash
-   npm run seed
-   ```
+2.  **Run the setup script for your Operating System:**
 
-6. Start the development server:
-   ```bash
-   npm run dev
-   ```
+    -   **On macOS or Linux:**
+        ```bash
+        chmod +x setup.sh
+        ./setup.sh
+        ```
 
-7. Open your browser and navigate to [http://localhost:3000](http://localhost:3000)
+    -   **On Windows (in PowerShell):**
+        You may need to bypass the execution policy. The safest way is to do it for a single command.
+        ```powershell
+        PowerShell.exe -ExecutionPolicy Bypass -File .\setup.ps1
+        ```
+
+3.  **Start the development server:**
+    The script will tell you when it's finished. Then, you can run:
+    ```bash
+    npm run dev
+    ```
+
+#### Method 2: Manual Installation
+
+Follow these steps if you prefer to set up the project manually.
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/christianbaumann/software-quality-books-design-patterns.git
+    cd software-quality-books-design-patterns
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Set up environment variables:**
+    -   Copy `.env.development` to `.env`.
+        ```bash
+        # On macOS/Linux
+        cp .env.development .env
+        
+        # On Windows (Command Prompt)
+        copy .env.development .env
+        ```
+    -   Generate a secret using the command below, then open the new `.env` file and paste the result as the value for `NEXTAUTH_SECRET`.
+        ```bash
+        openssl rand -base64 32
+        ```
+    -   Ensure `NEXTAUTH_URL` is set to `http://localhost:3000`.
+
+4.  **Set up the database:**
+    ```bash
+    npx prisma migrate dev
+    npx prisma generate
+    ```
+
+5.  **Seed the database with test data:**
+    ```bash
+    npm run seed
+    ```
+
+6.  **Start the development server:**
+    ```bash
+    npm run dev
+    ```
+
+After either installation method, open your browser and navigate to [http://localhost:3000](http://localhost:3000).
 
 ### Test Users
 
