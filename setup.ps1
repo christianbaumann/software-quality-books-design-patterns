@@ -85,8 +85,19 @@ function Setup-EnvironmentFile {
     # Generate and inject NEXTAUTH_SECRET if openssl is available
     if (Get-Command openssl -ErrorAction SilentlyContinue) {
         $secret = (openssl rand -base64 32)
-        # Read, replace, and write back - the idiomatic PowerShell way
-        (Get-Content -Path ".\.env") -replace '^NEXTAUTH_SECRET=.*', "NEXTAUTH_SECRET=$secret" | Set-Content -Path ".\.env"
+
+        # **FIX:** Use a robust ForEach-Object loop instead of -replace to avoid parsing issues.
+        $newContent = Get-Content -Path ".\.env" | ForEach-Object {
+            if ($_ -match '^NEXTAUTH_SECRET=') {
+                # Replace this line with the new secret
+                "NEXTAUTH_SECRET=$secret"
+            } else {
+                # Keep all other lines as they are
+                $_
+            }
+        }
+        $newContent | Set-Content -Path ".\.env"
+
         log_info "Generated and set NEXTAUTH_SECRET"
     }
 }
