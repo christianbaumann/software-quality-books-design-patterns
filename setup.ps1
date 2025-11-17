@@ -60,7 +60,7 @@ function Check-Dependencies {
 # Install npm dependencies
 function Install-Dependencies {
     if (Test-Path -Path ".\node_modules" -PathType Container) {
-        log_info "node_modules exists, running 'npm install' to ensure everything is up-to-date."
+        log_info "node_modules exists, running npm install to ensure everything is up-to-date."
     } else {
         log_info "Installing npm dependencies..."
     }
@@ -87,7 +87,7 @@ function Setup-EnvironmentFile {
         $secret = (openssl rand -base64 32)
 
         $newContent = Get-Content -Path ".\.env" | ForEach-Object {
-            if ($_.StartsWith('NEXTAUTH_SECRET=')) {
+            if ($_.StartsWith("NEXTAUTH_SECRET=")) {
                 # Replace this line with the new secret
                 "NEXTAUTH_SECRET=$secret"
             } else {
