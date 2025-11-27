@@ -1,3 +1,13 @@
+# Design Patterns Deep Dive @ Agile Testing Days 2025
+
+Materials:
+
+- [Talk: The Importance of Using Patterns in Test Automation.pdf](https://drive.google.com/file/d/1Kc4G6R9Rwbhw6V4aYvhDGySAOQ9EBcQb/view?usp=sharing)
+- [Mini-Workshop: Identifying Patterns in Test Automation Code.pdf](https://drive.google.com/file/d/1taMJgLVlPK7tZyoCJK7egD4k9KaTK8qy/view?usp=sharing)
+- [Quick Reference.pdf](https://drive.google.com/file/d/15fyqcK1nJfYHVTJZ78mqXUo4UJ1Z9H4Q/view?usp=sharing)
+- [Scorecard.pdf](https://drive.google.com/file/d/1ZNGUeX1yabdWSrNANTbY64M6QCVQppY4/view?usp=sharing)
+- [Scorecard - Completed.pdf](https://drive.google.com/file/d/1pZlO_BAvgcIaAftMDom-OP5MotjQjQsE/view?usp=sharing)
+
 # Software Quality Books
 
 A web application for managing and reviewing software quality books.
